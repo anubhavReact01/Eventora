@@ -22,22 +22,27 @@ const AdminDashboard = () => {
         }
         fetchData();
     }, [user, navigate]);
+const fetchData = async () => {
+    try {
+        const [eventsRes, bookingsRes] = await Promise.all([
+            api.get('/events'),
+            api.get('/bookings/my')
+        ]);
 
-    const fetchData = async () => {
-        try {
-            const [eventsRes, bookingsRes] = await Promise.all([
-                api.get('/events'),
-                api.get('/bookings/my') // Admin gets all bookings
-            ]);
-            setEvents(eventsRes.data);
-            setBookings(bookingsRes.data);
-        } catch (error) {
-            console.error('Error fetching admin data', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        setEvents(Array.isArray(eventsRes.data) ? eventsRes.data : eventsRes.data?.events || []);
+        setBookings(Array.isArray(bookingsRes.data) ? bookingsRes.data : bookingsRes.data?.bookings || []);
 
+    } catch (error) {
+        console.error('Error fetching admin data', error);
+
+        // safety fallback
+        setEvents([]);
+        setBookings([]);
+
+    } finally {
+        setLoading(false);
+    }
+};
     const handleCreateEvent = async (e) => {
         e.preventDefault();
         try {

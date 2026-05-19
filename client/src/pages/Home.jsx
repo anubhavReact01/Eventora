@@ -22,17 +22,21 @@ const Home = () => {
     return () => clearTimeout(timeoutId);
   }, [search]);
 
-  const fetchEvents = async () => {
-    try {
-      const { data } = await api.get(`/events?search=${search}`);
-      setEvents(data);
-    } catch (error) {
-      console.error("Error fetching events:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchEvents = async () => {
+  setLoading(true);
+  try {
+    const { data } = await api.get(`/events?search=${search}`);
 
+    // ✅ SAFE FIX
+    setEvents(Array.isArray(data) ? data : data?.events || []);
+
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    setEvents([]); // safety fallback
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
